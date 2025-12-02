@@ -1,0 +1,644 @@
+#include <stdio.h>
+#include <windows.h>
+#include <string.h>
+#include <conio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <ctype.h>
+
+// ====================================================================
+//                       FUNGSI DASAR (WARNA & CURSOR)
+// ====================================================================
+void setColor(int textColor, int bgColor) {
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
+                           (bgColor << 4) | textColor);
+}
+
+void setCursorPosition(int x, int y) {
+    COORD coord = {x, y};
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
+}
+
+// ====================================================================
+//                       LOADING AWAL (PERSEN + BAR)
+// ====================================================================
+void loadingAnimation() {
+    int barWidth = 40;
+    int percent = 0;
+
+    setColor(15, 1);
+    system("cls");
+
+    setCursorPosition(28, 5);
+    printf("      SELAMAT DATANG DI TUGAS RANCANG");
+
+    while (percent <= 100) {
+        setCursorPosition(36, 7);
+        printf("Loading : %3d%%", percent);
+
+        setCursorPosition(28, 8);
+        printf("============================================");
+
+        setCursorPosition(28, 9);
+        printf("||");
+
+        int filled = (percent * barWidth) / 100;
+
+        for (int i = 0; i < barWidth; i++) {
+            if (i < filled) {
+                setColor(15, 15);
+                printf("%c", 219);
+                setColor(15, 1);
+            } else {
+                printf(" ");
+            }
+        }
+
+        printf("||");
+
+        setCursorPosition(28, 10);
+        printf("============================================");
+
+        Sleep(45);
+        percent++;
+    }
+
+    Beep(1000, 200);
+    setCursorPosition(33, 12);
+    printf("Tekan ENTER untuk melanjutkan...");
+    getchar();
+}
+
+// ====================================================================
+//                 LOADING KETIK SETELAH LOGIN BERHASIL
+// ====================================================================
+void loadingKetik() {
+    system("cls");
+    setColor(15, 1);
+
+    int centerX = 40;   // posisi tengah horizontal (ubah jika layar berbeda)
+    int centerY = 10;   // posisi tengah vertical
+    char text[] = "Loading....";
+
+    // Tampilkan Loading.... secara mengetik
+    setCursorPosition(centerX, centerY);
+    for (int i = 0; i < strlen(text); i++) {
+        printf("%c", text[i]);
+        Sleep(180);
+    }
+
+    // Teks NEXT setelah loading selesai
+    Sleep(300);
+    setCursorPosition(centerX - 2, centerY + 4);
+    printf(">>>> NEXT >>>>");
+
+    getch();
+}
+
+
+// ====================================================================
+//                        DATA LOGIN USER
+// ====================================================================
+typedef struct {
+    char user[20];
+    char pass[20];
+} Akun;
+
+Akun akunList[] = {
+    {"admin", "admin123"},
+    {"fajar", "ganteng"},
+    {"123456", "password"}
+};
+
+int totalAkun = 3;
+
+// ====================================================================
+//                         CEK LOGIN
+// ====================================================================
+int cekLogin(char user[], char pass[]) {
+    for (int i = 0; i < totalAkun; i++) {
+        if (strcmp(user, akunList[i].user) == 0 &&
+            strcmp(pass, akunList[i].pass) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// ====================================================================
+//                      TAMPILAN LOGIN
+// ====================================================================
+void tampilLogin() {
+LOGIN_AGAIN:
+    system("cls");
+    setColor(15, 1);
+    Beep(1000, 200);
+    int x = 28, y = 6;
+
+    setCursorPosition(x, y);
+    printf("++============================================++");
+    setCursorPosition(x, y + 1);
+    printf("||        Username :                          ||");
+    setCursorPosition(x, y + 2);
+    printf("||        Password :                          ||");
+    setCursorPosition(x, y + 3);
+    printf("++============================================++");
+
+    char username[30], password[30];
+    int index = 0;
+    char ch;
+
+    // INPUT USERNAME
+    setCursorPosition(x + 22, y + 1);
+    scanf("%s", username);
+
+    // INPUT PASSWORD (masked)
+    setCursorPosition(x + 22, y + 2);
+    index = 0;
+
+    while (1) {
+        ch = getch();
+
+        if (ch == 13) { // ENTER
+            password[index] = '\0';
+            break;
+        }
+
+        if (ch == 8 && index > 0) { // BACKSPACE
+            index--;
+            printf("\b \b");
+            continue;
+        }
+
+        password[index++] = ch;
+        printf("*");
+    }
+
+    // CLEAR LAYAR HASIL LOGIN
+    system("cls");
+    setColor(15, 1);
+
+    setCursorPosition(x, y);
+    printf("++============================================++");
+
+    setCursorPosition(x, y + 1);
+    printf("||   Username: %-30s||", username);
+
+    char passMask[30];
+    for (int i = 0; i < strlen(password); i++) passMask[i] = '*';
+    passMask[strlen(password)] = '\0';
+
+    setCursorPosition(x, y + 2);
+    printf("||   Password: %-30s||", passMask);
+
+    setCursorPosition(x, y + 3);
+    printf("++============================================++");
+
+    // VALIDASI LOGIN
+    if (cekLogin(username, password)) {
+        setCursorPosition(x + 12, y + 5);
+        printf("[ Login Berhasil ]");
+        getch();
+
+        loadingKetik();  // <-- LOADING KETIK JIKA LOGIN BENAR
+        return;
+    }
+
+    // LOGIN GAGAL
+    setCursorPosition(x + 14, y + 5);
+    printf("[ Login Gagal ]");
+
+    setCursorPosition(x + 8, y + 7);
+    printf("Username / Password Salah");
+
+    setCursorPosition(x + 12, y + 9);
+    printf(">>>> Coba Lagi >>>>");
+
+    getch();
+    goto LOGIN_AGAIN;
+}
+
+#define RED_BG_COLOR    4   // Windows console background color for red
+#define WHITE_BG_COLOR  7   // Windows console background color for white
+
+void clearScreen(void) {
+    system("cls || clear");
+}
+
+void printHeader(void) {
+    setColor(15, 1);
+    printf("========================================\n");
+    printf("=              Kelompok 3              =\n");
+    printf("========================================\n\n");
+}
+
+void printHeaderBendera(void) {
+    setColor(15, 1);
+    printf("========================================\n");
+    printf("=                Bendera               =\n");
+    printf("========================================\n\n");
+}
+
+void sleep_ms(int ms) {
+    Sleep(ms);
+}
+
+void gambarBendera(int tinggi) {
+    int i, j;
+    int lebar = tinggi * 4;
+    setColor(15, 1);
+
+    for (i = 0; i < tinggi; i++) {
+        /* tiang should stay with blue background */
+        setColor(15, 1);
+        printf("|| ");
+
+        /* draw red background block */
+        setColor(15, RED_BG_COLOR);
+        for (j = 0; j < lebar; j++) printf(" ");
+
+        /* restore blue background for next prints */
+        setColor(15, 1);
+        printf("\n");
+    }
+
+    for (i = 0; i < tinggi; i++) {
+        /* tiang should keep blue background */
+        setColor(15, 1);
+        printf("|| ");
+
+        /* draw white background block (black text on white background) */
+        setColor(0, WHITE_BG_COLOR);
+        for (j = 0; j < lebar; j++) printf(" ");
+
+        /* restore blue background */
+        setColor(15, 1);
+        printf("\n");
+    }
+
+    for (i = 0; i < tinggi; i++) {
+        setColor(15, 1);
+        printf("||\n");
+    }
+}
+
+void animasiBendera(int tinggi, int delay_ms) {
+    int i, j;
+    int lebar = tinggi * 4;
+    int totalRows = tinggi * 3;
+    int flagRows = tinggi * 2;
+    setColor(15, 1);
+
+    for (i = 0; i < totalRows; i++) {
+        clearScreen();
+        printHeaderBendera();
+        for (int r = 0; r <= i; r++) {
+            if (r < flagRows) {
+                printf("|| ");
+                /* keep entire empty area blue background */
+                setColor(15, 1);
+                for (j = 0; j < lebar; j++) printf(" ");
+                printf("\n");
+            } else {
+                printf("||\n");
+            }
+        }
+        for (int r = i + 1; r < totalRows; r++) putchar('\n');
+        sleep_ms(delay_ms);
+    }
+
+    for (i = 0; i < flagRows; i++) {
+        clearScreen();
+        printHeaderBendera();
+        for (int r = 0; r < totalRows; r++) {
+            if (r < flagRows) {
+                printf("|| ");
+                if (r <= i) {
+                    if (r < tinggi) {
+                            /* red background */
+                            setColor(15, RED_BG_COLOR);
+                            for (j = 0; j < lebar; j++) printf(" ");
+                            /* restore blue background after printing colored block */
+                            setColor(15, 1);
+                    } else {
+                            /* white background */
+                            setColor(0, WHITE_BG_COLOR);
+                            for (j = 0; j < lebar; j++) printf(" ");
+                            /* restore blue background after printing colored block */
+                            setColor(15, 1);
+                    }
+                } else {
+                    /* not yet drawn: show blue background */
+                    setColor(15, 1);
+                    for (j = 0; j < lebar; j++) printf(" ");
+                }
+                printf("\n");
+            } else {
+                printf("||\n");
+            }
+        }
+        sleep_ms(delay_ms);
+    }
+    clearScreen();
+    printHeaderBendera();
+    gambarBendera(tinggi);
+}
+
+// ============================ MENU BENDERA ===========================
+void menuBendera() {
+menu:
+    clearScreen();
+    printHeaderBendera();
+    setColor(15, 1);
+
+    int tinggi;
+    while (1) {
+        printf("Masukkan tinggi bendera: ");
+        if (scanf("%d", &tinggi) != 1) {
+            printf("Input tidak valid! Harap masukkan angka.\n");
+            while (getchar() != '\n');
+            continue;
+        }
+        break;
+    }
+
+    animasiBendera(tinggi, 100);
+
+    int pilihan;
+    while (1) {
+        printf("\n1. Ulang\n2. Exit\nPilihan: ");
+        if (scanf("%d", &pilihan) != 1) {
+            printf("Input tidak valid!\n");
+            while (getchar() != '\n');
+            continue;
+        }
+        if (pilihan == 1) goto menu;
+        else if (pilihan == 2) break;
+        else printf("Pilihan hanya 1 atau 2!\n");
+    }
+}
+
+void typeEffect(const char *text, int delay) {
+    while (*text) {
+        printf("%c", *text);
+        fflush(stdout);
+        usleep(delay);
+        text++;
+    }
+}
+
+void tampilCreator() {
+    system("cls || clear"); // Bersihkan layar
+
+    printf("==================================================\n");
+    printf("=                     CREATOR                    =\n");
+    printf("==================================================\n\n");
+
+    // Animasi mengetik
+    typeEffect("Nama : Wahyu Andrean\n", 45000);
+    typeEffect("NIM  : 672025049\n\n", 45000);
+
+    typeEffect("Nama : M. Fajar Putra\n", 45000);
+    typeEffect("NIM  : 672025053\n\n", 45000);
+
+    typeEffect("Nama : Christian Loveindi\n", 45000);
+    typeEffect("NIM  : 672025042\n\n", 45000);
+
+    typeEffect("Nama : Damar Maharyanu Prihanto\n", 45000);
+    typeEffect("NIM  : 672025051\n\n", 45000);
+
+
+    printf("\n>>>> Next >>>>\n");
+
+    // ======= Bersihkan buffer input =======
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);  
+
+    // ======= Tunggu user menekan Enter =======
+    printf("Press Enter to continue...");
+    getchar();
+}
+
+void menuBelanja() {
+    struct Barang {
+        char nama[30];
+        int harga;
+    };
+
+    struct Barang daftar[] = {
+        {"Potato", 10000},
+        {"Sunsilk", 18000},
+        {"Rexona", 23000},
+        {"Khaf", 42000},
+        {"Kecap Bangau", 19000},
+        {"Sosis", 24000},
+        {"Makarizo", 24000},
+        {"Wipol", 18000},
+        {"Indomie Kuah", 3500},
+        {"Qtela", 9300},
+        {"Bimoli", 27000},
+        {"SilverQuin", 30000},
+        {"Cocacola", 9500},
+        {"Oreo", 11000},
+        {"Roti Tawar", 13000}
+    };
+
+    int jumlah_barang = sizeof(daftar) / sizeof(daftar[0]);
+
+    int kode, qty;
+    char lanjut;
+    char beli_nama[20][30];
+    int beli_qty[20];
+    int beli_total[20];
+    int count = 0;
+
+    system("cls || clear");
+    printf("============== GROSIR ECERAN =============\n");
+    printf("| No | NAMA BARANG        | HARGA BARANG |\n");
+    printf("------------------------------------------\n");
+
+    for (int i = 0; i < jumlah_barang; i++) {
+        printf("| %-2d | %-17s | Rp %-7d |\n",
+               i+1, daftar[i].nama, daftar[i].harga);
+    }
+
+    printf("===========================================\n\n");
+
+    do {
+        printf("Masukkan nomor barang: ");
+        scanf("%d", &kode);
+
+        if (kode < 1 || kode > jumlah_barang) {
+            printf("Nomor Barang Tidak Valid!!!\n");
+            continue;
+        }
+
+        printf("Jumlah Barang : ");
+        scanf("%d", &qty);
+
+        strcpy(beli_nama[count], daftar[kode-1].nama);
+        beli_qty[count] = qty;
+        beli_total[count] = daftar[kode-1].harga * qty;
+
+        printf("Anda membeli %d %s\n", qty, daftar[kode-1].nama);
+
+        printf("Ingin membeli barang lagi? (y/n): ");
+        scanf(" %c", &lanjut);
+
+        count++;
+
+    } while (lanjut == 'y' || lanjut == 'Y');
+
+    printf("\n================= STRUK BELANJA =================\n");
+    int total = 0;
+
+    for (int i = 0; i < count; i++) {
+        printf("%-15s | %-2d | Rp %d\n",
+               beli_nama[i], beli_qty[i], beli_total[i]);
+        total += beli_total[i];
+    }
+
+    printf("-----------------------------------------------\n");
+    printf("Total Harga               : Rp %.2f\n", (float)total);
+
+    int uang;
+ulang_bayar:
+    printf("Masukkan Uang Pembeli     : Rp ");
+    scanf("%d", &uang);
+
+    if (uang < total) {
+        printf("Uang pembeli kurang! Mohon masukkan lagi.\n");
+        goto ulang_bayar;
+    }
+
+    printf("-----------------------------------------------\n");
+    printf("Uang Pembeli              : Rp %d\n", uang);
+    printf("Kembalian                 : Rp %d\n", uang - total);
+    printf("-----------------------------------------------\n");
+    printf("\n>>>> Next >>>>\n");
+    int c; while ((c = getchar()) != '\n' && c != EOF); // bersihkan buffer
+    getchar(); // tunggu Enter
+}
+
+void menuBGK() {
+    int user, komputer;
+    char ulang;
+    char *nama[4] = {"", "batu", "gunting", "kertas"};
+
+    srand(time(NULL));
+
+    do {
+        system("cls || clear"); // Windows: cls, Linux/Mac: clear
+
+        printf("=======================================================\n");
+        printf("||               Permainan Batu Gunting Kertas       ||\n");
+        printf("=======================================================\n");
+        printf("||                                                   ||\n");
+        printf("||                   1. Batu                         ||\n");
+        printf("||                   2. Gunting                      ||\n");
+        printf("||                   3. Kertas                       ||\n");
+        printf("||                                                   ||\n");
+        printf("=======================================================\n");
+
+        // INPUT USER
+        printf("||   Masukkan pilihan : ");
+        scanf("%d", &user);
+        printf("||%50s||\n", "");   // menutup kanan dengan rapi
+        printf("=======================================================\n\n");
+
+        if (user < 1 || user > 3) {
+            printf("Pilihan tidak valid!\n");
+            ulang = 'u';
+            continue;
+        }
+
+        komputer = (rand() % 3) + 1;
+        printf("    Komputer memilih %s\n", nama[komputer]);
+
+        // Tentukan hasil
+        if (user == komputer) {
+            printf("    Hasil : Seri\n");
+        } else if ((user == 1 && komputer == 2) ||
+                   (user == 2 && komputer == 3) ||
+                   (user == 3 && komputer == 1)) {
+            printf("    Hasil : Pemenangnya Kamu\n");
+        } else {
+            printf("    Hasil : Pemenangnya Komputer\n");
+        }
+
+        printf("\n");
+        printf("U (Ulang)\n");
+        printf("X (Exit)\n");
+        printf("Masukkan pilihan : ");
+        scanf(" %c", &ulang);
+
+        ulang = tolower(ulang);
+
+    } while (ulang == 'u');
+
+    printf("\nTekan Enter untuk kembali ke menu...");
+    int c; while ((c = getchar()) != '\n' && c != EOF); // bersihkan buffer
+    getchar();
+}
+
+
+
+void menuUtama() {
+    int pilihan;
+    while (1) {
+        clearScreen();
+        Beep(1000, 200);
+        printHeader();
+        printf("Menu Utama:\n");
+        printf("1. Toko Kelontong\n");
+        printf("2. Batu Gunting Kertas\n");
+        printf("3. Bendera\n");
+        printf("4. Author\n");
+        printf("5. Exit\n");
+        printf("Pilihan: ");
+
+        if (scanf("%d", &pilihan) != 1) {
+            printf("Input tidak valid! Harap masukkan angka.\n");
+            while (getchar() != '\n');
+            Sleep(1000);
+            continue;
+        }
+
+        switch (pilihan) {
+            case 1:
+                Beep(1000, 200);
+                menuBelanja();
+                break;
+            case 2:
+                Beep(1000, 200);
+                menuBGK();
+                break;
+            case 3:
+                Beep(1000, 200);
+                menuBendera();
+                break;
+            case 4:
+                Beep(1000, 200);
+                tampilCreator();
+                break;
+            case 5:
+                printf("Keluar...\n");
+                Sleep(1000);
+                return;  // keluar dari menu utama
+            default:
+                printf("Pilihan hanya 1-5!\n");
+                Sleep(1000);
+        }
+    }
+}
+
+
+// ====================================================================
+//                           MAIN PROGRAM
+// ====================================================================
+int main() {
+    loadingAnimation();
+    tampilLogin();
+    menuUtama();
+    return 0;
+}
