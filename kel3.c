@@ -218,184 +218,172 @@ LOGIN_AGAIN:
     goto LOGIN_AGAIN;
 }
 
-#define RED_BG_COLOR    4   // Windows console background color for red
-#define WHITE_BG_COLOR  7   // Windows console background color for white
 
-void clearScreen(void) {
+
+// ====================================================================
+//                       MENU BENDERA                                //
+// ====================================================================
+#define RED_BG_COLOR    4  //warna background merah
+#define WHITE_BG_COLOR  7  //warna background putih
+
+void clearScreen(void) { //fungsi membersihkan layar
     system("cls || clear");
 }
 
-void printHeader(void) {
-    setColor(15, 1);
-    printf("========================================\n");
-    printf("=              Kelompok 3              =\n");
-    printf("========================================\n\n");
+void printJudulBendera(int tinggi) { //fungsi print judul
+    setColor(15, 1); //warna teks putih, background biru
+    printf("========================================================\n"); 
+    printf("=                        Bendera                       =\n");
+    printf("========================================================\n\n");
+    if (tinggi >= 0) { //input tinggi
+        setColor(15, 1);
+        printf("Masukkan tinggi bendera: %d\n\n", tinggi);
+    }
 }
 
-void printHeaderBendera(void) {
-    setColor(15, 1);
-    printf("========================================\n");
-    printf("=                Bendera               =\n");
-    printf("========================================\n\n");
-}
-
-void sleep_ms(int ms) {
+void sleep_ms(int ms) { //fungsi delay 
     Sleep(ms);
 }
 
-void gambarBendera(int tinggi) {
+void gambarBendera(int tinggi) { //fungsi gambar bendera
     int i, j;
-    int lebar = tinggi * 4;
+    int lebar = tinggi * 4; //lebar 4 x tinggi
     setColor(15, 1);
 
-    for (i = 0; i < tinggi; i++) {
-        /* tiang should stay with blue background */
-        setColor(15, 1);
-        printf("|| ");
-
-        /* draw red background block */
-        setColor(15, RED_BG_COLOR);
-        for (j = 0; j < lebar; j++) printf(" ");
-
-        /* restore blue background for next prints */
-        setColor(15, 1);
+    for (i = 0; i < tinggi; i++) { //bagian merah
+        setColor(15, 1); //warna teks putih, background biru
+        printf("|| "); //gambar tiang bendera
+        setColor(15, RED_BG_COLOR); //warna background merah
+        for (j = 0; j < lebar; j++) printf(" "); //menggambar bagian merah
+        setColor(15, 1); //kembali ke warna teks putih, background biru
         printf("\n");
     }
 
-    for (i = 0; i < tinggi; i++) {
-        /* tiang should keep blue background */
-        setColor(15, 1);
-        printf("|| ");
-
-        /* draw white background block (black text on white background) */
-        setColor(0, WHITE_BG_COLOR);
-        for (j = 0; j < lebar; j++) printf(" ");
-
-        /* restore blue background */
-        setColor(15, 1);
+    for (i = 0; i < tinggi; i++) { //bagian putih
+        setColor(15, 1); //warna teks putih, background biru
+        printf("|| "); //gambar tiang bendera
+        setColor(0, WHITE_BG_COLOR); //warna background putih
+        for (j = 0; j < lebar; j++) printf(" "); //menggambar bagian putih
+        setColor(15, 1); //kembali ke warna teks putih, background biru
         printf("\n");
     }
 
-    for (i = 0; i < tinggi; i++) {
-        setColor(15, 1);
+    for (i = 0; i < tinggi; i++) { //bagian tiang bawah
+        setColor(15, 1); //warna teks putih, background biru
         printf("||\n");
     }
 }
 
-void animasiBendera(int tinggi, int delay_ms) {
+void animasiBendera(int tinggi, int delay_ms) { //fungsi animasi bendera
     int i, j;
-    int lebar = tinggi * 4;
-    int totalRows = tinggi * 3;
-    int flagRows = tinggi * 2;
+    int lebar = tinggi * 4; // lebar dibuat 4 x dari tinggi
+    int totalRows = tinggi * 3; // total baris tiang dan bendera
+    int flagRows = tinggi * 2; // total baris bendera
     setColor(15, 1);
 
-    for (i = 0; i < totalRows; i++) {
+    for (i = 0; i < totalRows; i++) { // Animasi tiang bendera: tampilkan tiang baris demi baris
         clearScreen();
-        printHeaderBendera();
-        for (int r = 0; r <= i; r++) {
-            if (r < flagRows) {
+        printJudulBendera(tinggi); 
+        for (int r = 0; r <= i; r++) { // perulangan untuk setiap baris hingga i
+            if (r < flagRows) { // bagian bendera: kosongkan
                 printf("|| ");
-                /* keep entire empty area blue background */
                 setColor(15, 1);
-                for (j = 0; j < lebar; j++) printf(" ");
+                for (j = 0; j < lebar; j++) printf(" "); //menggambar bagian kosong
                 printf("\n");
             } else {
                 printf("||\n");
             }
         }
-        for (int r = i + 1; r < totalRows; r++) putchar('\n');
-        sleep_ms(delay_ms);
+        for (int r = i + 1; r < totalRows; r++) putchar('\n'); // sisakan baris kosong untuk animasi
+        sleep_ms(delay_ms); // delay
     }
 
-    for (i = 0; i < flagRows; i++) {
+    for (i = 0; i < flagRows; i++) { // Animasi bendera: tampilkan warna baris demi baris
         clearScreen();
-        printHeaderBendera();
-        for (int r = 0; r < totalRows; r++) {
-            if (r < flagRows) {
+        printJudulBendera(tinggi);
+        for (int r = 0; r < totalRows; r++) { // perulangan untuk setiap baris
+            if (r < flagRows) { // baris-baris bendera, tampilkan warna bila sudah waktunya
                 printf("|| ");
                 if (r <= i) {
                     if (r < tinggi) {
-                            /* red background */
-                            setColor(15, RED_BG_COLOR);
+                            setColor(15, RED_BG_COLOR); //warna background merah
                             for (j = 0; j < lebar; j++) printf(" ");
-                            /* restore blue background after printing colored block */
                             setColor(15, 1);
                     } else {
-                            /* white background */
-                            setColor(0, WHITE_BG_COLOR);
+                            setColor(0, WHITE_BG_COLOR); //warna background putih
                             for (j = 0; j < lebar; j++) printf(" ");
-                            /* restore blue background after printing colored block */
                             setColor(15, 1);
                     }
                 } else {
-                    /* not yet drawn: show blue background */
-                    setColor(15, 1);
-                    for (j = 0; j < lebar; j++) printf(" ");
+                    setColor(15, 1); //warna teks putih, background biru
+                    for (j = 0; j < lebar; j++) printf(" "); //menggambar bagian kosong
                 }
                 printf("\n");
             } else {
-                printf("||\n");
+                printf("||\n"); // bagian tiang bawah
             }
         }
         sleep_ms(delay_ms);
     }
-    clearScreen();
-    printHeaderBendera();
+    clearScreen(); 
+    printJudulBendera(tinggi);
     gambarBendera(tinggi);
 }
 
-// ============================ MENU BENDERA ===========================
-void menuBendera() {
+void menuBendera() { //fungsi menu bendera
 menu:
     clearScreen();
-    printHeaderBendera();
+    printJudulBendera(-1);
     setColor(15, 1);
 
     int tinggi;
-    while (1) {
-        printf("Masukkan tinggi bendera: ");
-        if (scanf("%d", &tinggi) != 1) {
+    while (1) { //input tinggi dengan validasi
+        printf("Masukkan tinggi bendera: "); 
+        if (scanf("%d", &tinggi) != 1) { //cek input apakah angka
             printf("Input tidak valid! Harap masukkan angka.\n");
-            while (getchar() != '\n');
-            continue;
+            while (getchar() != '\n'); // bersihkan buffer input
+            continue; // ulang input
         }
         break;
     }
 
-    animasiBendera(tinggi, 100);
+    animasiBendera(tinggi, 100); //jalankan animasi bendera
 
     int pilihan;
     while (1) {
-        printf("\n1. Ulang\n2. Exit\nPilihan: ");
+        printf("\n1. Ulang\n2. Exit\nPilihan: "); //menu ulang atau exit
         if (scanf("%d", &pilihan) != 1) {
-            printf("Input tidak valid!\n");
-            while (getchar() != '\n');
-            continue;
+            printf("Input tidak valid!\n"); //cek input valid (harus angka)
+            while (getchar() != '\n'); // bersihkan buffer input
+            continue; // ulang input
         }
-        if (pilihan == 1) goto menu;
-        else if (pilihan == 2) break;
-        else printf("Pilihan hanya 1 atau 2!\n");
+        if (pilihan == 1) goto menu; // ulang menu
+        else if (pilihan == 2) break;      // keluar dari menu
+        else printf("Pilihan hanya 1 atau 2!\n"); //cek pilihan hanya 1 atau 2
     }
 }
 
-void typeEffect(const char *text, int delay) {
-    while (*text) {
-        printf("%c", *text);
-        fflush(stdout);
-        usleep(delay);
-        text++;
+// ====================================================================
+//                       TAMPIL CREATOR                                
+// ====================================================================
+
+void typeEffect(const char *text, int delay) { //efek mengetik
+    while (*text) { // selama belum akhir string
+        printf("%c", *text); // cetak karakter saat ini
+        fflush(stdout); // pastikan karakter langsung tampil
+        usleep(delay); // delay mikrodetik
+        text++; // pindah ke karakter berikutnya
     }
 }
 
 void tampilCreator() {
     system("cls || clear"); // Bersihkan layar
-
     printf("==================================================\n");
     printf("=                     CREATOR                    =\n");
     printf("==================================================\n\n");
 
     // Animasi mengetik
-    typeEffect("Nama : Wahyu Andrean\n", 45000);
+    typeEffect("Nama : Wahyu Andrean\n", 45000); // delay 45ms per karakter
     typeEffect("NIM  : 672025049\n\n", 45000);
 
     typeEffect("Nama : M. Fajar Putra\n", 45000);
@@ -409,14 +397,10 @@ void tampilCreator() {
 
 
     printf("\n>>>> Next >>>>\n");
-
-    // ======= Bersihkan buffer input =======
     int c;
-    while ((c = getchar()) != '\n' && c != EOF);  
-
-    // ======= Tunggu user menekan Enter =======
+    while ((c = getchar()) != '\n' && c != EOF);   // bersihkan buffer
     printf("Press Enter to continue...");
-    getchar();
+    getchar(); // tunggu Enter
 }
 
 void menuBelanja() {
@@ -585,25 +569,56 @@ void menuBGK() {
 
 void menuUtama() {
     int pilihan;
+
     while (1) {
         clearScreen();
+        setColor(15, 1);
         Beep(1000, 200);
-        printHeader();
-        printf("Menu Utama:\n");
-        printf("1. Toko Kelontong\n");
-        printf("2. Batu Gunting Kertas\n");
-        printf("3. Bendera\n");
-        printf("4. Author\n");
-        printf("5. Exit\n");
-        printf("Pilihan: ");
 
-        if (scanf("%d", &pilihan) != 1) {
-            printf("Input tidak valid! Harap masukkan angka.\n");
-            while (getchar() != '\n');
-            Sleep(1000);
-            continue;
-        }
+        int x = 20;   // POSISI KE TENGAH
+        int y = 3;
 
+        // ================== HEADER ====================
+        setCursorPosition(x, y++);
+        printf("++====================================================++");
+        setCursorPosition(x, y++);
+        printf("||                     KELOMPOK 4                     ||");
+        setCursorPosition(x, y++);
+        printf("++====================================================++");
+
+        // ================== MENU =======================
+        setCursorPosition(x, y++);
+        printf("||                                                    ||");
+        setCursorPosition(x, y++);
+        printf("||                    [  Menu : ]                     ||");
+        setCursorPosition(x, y++);
+        printf("||                                                    ||");
+
+        setCursorPosition(x, y++);
+        printf("||        1. Toko Kelontong                           ||");
+        setCursorPosition(x, y++);
+        printf("||        2. Batu Gunting Kertas                      ||");
+        setCursorPosition(x, y++);
+        printf("||        3. Bendera                                  ||");
+        setCursorPosition(x, y++);
+        printf("||        4. Author                                   ||");
+        setCursorPosition(x, y++);
+        printf("||        5. Exit                                     ||");
+
+        setCursorPosition(x, y++);
+        printf("||                                                    ||");
+
+        // ================== GARIS PEMBATAS =============
+        setCursorPosition(x, y++);
+        printf("++====================================================++");
+
+        // ================== INPUT DALAM KOTAK ==========
+        setCursorPosition(x, y);
+        printf("  Pilihan:  ");
+        setCursorPosition(x + 10, y); 
+        scanf("%d", &pilihan);
+
+        // ================== LOGIKA MENU =================
         switch (pilihan) {
             case 1:
                 Beep(1000, 200);
@@ -622,15 +637,19 @@ void menuUtama() {
                 tampilCreator();
                 break;
             case 5:
+                setCursorPosition(x + 10, y + 2);
                 printf("Keluar...\n");
                 Sleep(1000);
-                return;  // keluar dari menu utama
+                return;
+
             default:
+                setCursorPosition(x + 10, y + 2);
                 printf("Pilihan hanya 1-5!\n");
                 Sleep(1000);
         }
     }
 }
+
 
 
 // ====================================================================
